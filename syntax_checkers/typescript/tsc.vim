@@ -14,6 +14,11 @@ if !exists('g:syntastic_typescript_tsc_sort')
     let g:syntastic_typescript_tsc_sort = 1
 endif
 
+" flag to use tsconfig.json file for tsc args
+if !exists('g:syntastic_typescript_tsc_tsconfig')
+    let g:syntastic_typescript_tsc_tsconfig = 0
+endif
+
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -39,10 +44,17 @@ function! SyntaxCheckers_typescript_tsc_IsAvailable() dict
 endfunction
 
 function! SyntaxCheckers_typescript_tsc_GetLocList() dict
-    let makeprg = self.makeprgBuild({
-        \ 'args': '--module commonjs',
-        \ 'args_after': (s:tsc_new ? '--noEmit' : '--out ' . syntastic#util#DevNull()) })
 
+    if g:syntastic_typescript_tsc_tsconfig
+        " if using tsconfig.json file for args, then make with no args and override fname to be blank
+        let makeprg = self.makeprgBuild({
+            \ 'fname': '' })
+    else
+        let makeprg = self.makeprgBuild({
+            \ 'args': '--module commonjs',
+            \ 'args_after': (s:tsc_new ? '--noEmit' : '--out ' . syntastic#util#DevNull()) })
+    endif
+    
     let errorformat =
         \ '%E%f %#(%l\,%c): error %m,' .
         \ '%E%f %#(%l\,%c): %m,' .
